@@ -1,0 +1,3 @@
+RF_CARD_BAUDRATE: !!python/unicode '38400'
+RF_CARD_COM_PORT: !!python/unicode 'COM11'
+SAVE_DIR: !!python/unicode 'D:\Calib\Logs'
