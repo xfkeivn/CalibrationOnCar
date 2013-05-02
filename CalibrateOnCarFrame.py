@@ -32,17 +32,14 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
             threshold_radio.SetItemLabel(1,'NXP-Data')
             threshold_radio.SetItemLabel(2,"H(nT)")
             result = getattr(self,"m_%s_RESULT"%(antenna))
-            result.SetBitmapLabel(wx.Bitmap(r"img/red_light.png"))
+            result.SetBitmapLabel(wx.Bitmap(r"img/grey.png"))
             threshold_radio.Bind( wx.EVT_RADIOBOX, self.OnThresholdTypeRadio )
             threshold_radio.SetSelection(0)
             threshold_radio.SetName("m_%s_Threshold"%(antenna))
-           
-            
-            
-            
             if cur_value:
                 cur_value.SetInitialSize((40,-1))
                 cur_value.AppendItems([str(i) for i in CURRENT_RANGE])
+                cur_value.SetInitialSize((70,-1))
                 cur_value.SetSelection(0)
             for type in RSSI_VAL_TYPE:
                 rssi_value = getattr(self,"m_%s_%s"%(antenna,type))
@@ -52,6 +49,9 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
             antenna_check.Bind( wx.EVT_CHECKBOX, self.OnCheckAntenna )
         self.m_data_Current_value.AppendItems([str(i) for i in CURRENT_RANGE])
         self.m_data_Current_value.SetSelection(0)
+        self.m_key_uid.SetValue('0')
+        self.m_fob_number.SetValue('10101')
+        self.m_battery_value.SetValue('10.0')
         
         self.Fit()
         self.Bind(utilities.EVT_UPDATE_APPENDLOGITEM, self.log)
@@ -59,10 +59,18 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.rfmonitor.RegisterObserver(self)
         self.startperiodictrigger = False
         self.timer = None
+        self.init_monitor_table()
         gLogger.SetTarget(self)        
         self.Bind(EVT_RECORD_RF_RESPONSE, self.UpdateResult)
         self.m_scrolledWindow2.Layout()
         self.m_scrolledWindow2.FitInside()
+    def init_monitor_table(self):
+        COLUMN_NAME=[u"Fob号",u"X坐标",u"Y坐标",u"Z坐标",u"IN1",u"IN2",u"IN3",u"FL",u"FR",u"TR"]
+        for i,name in enumerate(COLUMN_NAME):
+            self.m_monitor_result_table.SetColLabelValue(i,name);
+            self.m_monitor_result_table.SetColSize(i,50);
+        self.m_monitor_result_table.SetColLabelSize(20)
+        self.m_monitor_result_table.SetRowLabelSize(60)
     def OnThresholdTypeRadio(self,event):
         name = event.GetEventObject().GetName()
         print name
@@ -108,6 +116,7 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         for type in RSSI_VAL_TYPE:
                 rssi_value = getattr(self,"m_%s_%s"%(antennatype,type))
                 rssi_value.Enable(enable)
+        result.SetBitmapLabel(wx.Bitmap(r"img/grey.png"))
         result.Enable(enable)
         threshold_value.Enable(enable)
         threshold_type.Enable(enable)
@@ -264,9 +273,9 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
     def SetAntennaResult(self,antenna,result):
         antennaresult = getattr(self,"m_%s_RESULT"%(antenna))
         if result:
-             antennaresult.SetBitmapLabel(wx.Bitmap("img/green_light.png"))
+             antennaresult.SetBitmapLabel(wx.Bitmap("img/green.png"))
         else:
-             antennaresult.SetBitmapLabel(wx.Bitmap("img/red_light.png"))
+             antennaresult.SetBitmapLabel(wx.Bitmap("img/red.png"))
     def onMenuSelection(self,event):
         eventid = event.GetId()
         if eventid == MainFrame.MENU_ID_EXIT:
