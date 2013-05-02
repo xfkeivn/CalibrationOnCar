@@ -25,6 +25,8 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.m_data_antenna.SetSelection(0)
         self.initLoglistctrl()
         self.monitorenable = False;
+        self.current_config={}
+        self.current_row_index = 0
         for antenna in ANTENNA_LIST:
             cur_value = getattr(self,"m_%s_Current_Value"%(antenna))
             threshold_radio = getattr(self,"m_%s_Threshold"%(antenna));
@@ -50,8 +52,8 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.m_data_Current_value.AppendItems([str(i) for i in CURRENT_RANGE])
         self.m_data_Current_value.SetSelection(0)
         self.m_key_uid.SetValue('0')
-        self.m_fob_number.SetValue('10101')
-        self.m_battery_value.SetValue('10.0')
+        self.m_fob_number.SetValue('0')
+        self.m_battery_value.SetValue('0')
         
         self.Fit()
         self.Bind(utilities.EVT_UPDATE_APPENDLOGITEM, self.log)
@@ -61,6 +63,7 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.timer = None
         self.init_monitor_table()
         gLogger.SetTarget(self)        
+        self.SetAllResult(-1)
         self.Bind(EVT_RECORD_RF_RESPONSE, self.UpdateResult)
         self.m_scrolledWindow2.Layout()
         self.m_scrolledWindow2.FitInside()
@@ -79,7 +82,35 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         type = p.match(name).group(1)
         self.updateThresholdSelction(type,selection)
       
-    
+    def InsertIntoTable(self,response):
+        
+        size = self.m_monitor_result_table.GetNumberRows()
+        batteryvalue = str(response['battery'])
+        fob_id= str(response['fob_id'])
+        self.m_battery_value.SetValue(batteryvalue)
+        fob_number = str(response['fob_number'])
+        self.m_fob_number.SetValue(fob_number)
+        lf1_rssi= response['LF1_RSSI']
+        lf2_rssi= response['LF2_RSSI']
+        lf3_rssi =  response['LF3_RSSI']
+        lf_array = [str(lf1_rssi),str(lf2_rssi),str(lf3_rssi)]
+        self.m_monitor_result_table.SetCellValue(self.current_row_index,0,fob_number)
+        if not self.startperiodictrigger:
+            self.m_monitor_result_table.SetCellValue(self.current_row_index,1,self.m_pos_x.GetValue())
+            self.m_monitor_result_table.SetCellValue(self.current_row_index,2,self.m_pos_y.GetValue())
+            self.m_monitor_result_table.SetCellValue(self.current_row_index,3,self.m_pos_z.GetValue())
+        lf_count = 0
+        offset = 4
+        for i,antennatype in enumerate(ANTENNA_LIST):
+            if self.current_config["%s_Checked"%(antennatype)]:
+                if lf_count < len(lf_array):
+                    self.m_monitor_result_table.SetCellValue(self.current_row_index,offset+i,lf_array[lf_count])
+                    lf_count+=1
+        self.current_row_index+=1
+        if self.current_row_index > 5:
+            self.m_monitor_result_table.AppendRows(1)
+            self.m_monitor_result_table.ScrollLines(1)    
+            
     def updateThresholdSelction(self,type,selection):
         if selection == 1:
             getattr(self,"m_%s_threshold_value"%(type)).Hide()
@@ -148,14 +179,51 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
             self.DoDeviceInit()
         if eventid == MainFrame.TOOL_ID_START_TRACE:
             self.MonitorRFResponse()
+        if eventid == MainFrame.TOOL_ID_SAVE:
+            self.SaveData()
+        if eventid == MainFrame.TOOL_ID_CLEAR:
+            self.ClearData()
+    def SaveData(self):
+        dlg = wx.FileDialog(
+                        self, message="Save file as ...", defaultDir=os.getcwd(), 
+            defaultFile="", wildcard=utilities.wildcard_csv, style=wx.SAVE
+            )
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            lines = []
+            rowsize = 0
+            colsize = 0
+            rowsize = self.m_monitor_result_table.GetNumberRows()
+            colsize = self.m_monitor_result_table.GetNumberCols()
+            self.GridToLines(self.m_monitor_result_table,rowsize, colsize, lines)    
+            f = open(path,'w')
+            f.writelines(lines)
+            f.close()
+    def GridToLines(self,grid, rowsize, colsize, lines):
+        head = ['FobNumber','X','Y','Z','IN1','IN2','IN3','FL','FR','TR']
+        head = ",".join(head) + "\n"
+        lines.append(head)
+        for row in range(0, rowsize):
+            line = grid.GetCellValue(row, 0)
+            for col in range(1, colsize):
+                value = grid.GetCellValue(row, col)
+                value = value.replace(',', '')
+                line = line + ',' + str(value)
+            lines.append(line+"\n")
+
+    def ClearData(self): 
+        self.m_monitor_result_table.ClearGrid()
+        if self.current_row_index > 5:
+            self.m_monitor_result_table.DeleteRows(6,self.current_row_index-5)
+        self.current_row_index = 0
     def log(self, evt):
         content = evt.log_content
         type = evt.log_type
         coloroflog = wx.DEFAULT;
         leveloflog = "INFO"
-        if type == utilities.LOG_TYPE_DEBUG:
+        if type == utilities.LOG_TYPE_WARN:
             coloroflog = wx.BLUE
-            leveloflog = "DEBUG"
+            leveloflog = "WARN"
         elif type == utilities.LOG_TYPE_INFO:
             coloroflog = wx.BLACK;
             leveloflog = "INFO"
@@ -172,12 +240,11 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.m_info_list.SetItem(item)
         self.m_info_list.SetStringItem(index, 1, str(content))
         self.m_info_list.ScrollLines(1)
+    
     def FormatConfig(self):
         config = {}
         config['DataAntennaIndex'] = self.m_data_antenna.GetSelection()
         config['DataAnatennaCurIndex'] = self.m_data_Current_value.GetSelection()
-        
-        
         config['IN1_Checked'] = self.m_IN1_Check.IsChecked()
         config['IN2_Checked'] = self.m_IN2_Check.IsChecked()
         config['IN3_Checked'] = self.m_IN3_Check.IsChecked()
@@ -206,11 +273,11 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         config['FR_threshold_value'] = self.m_FR_threshold_value.GetValue()
         config['TR_threshold_value'] = self.m_TR_threshold_value.GetValue()
         for type in ANTENNA_LIST:
-        	config['%s_Threshold_NXP_H'%(type)] = getattr(self,"m_%s_NXP_H"%(type)).GetValue()
-        	config['%s_Threshold_NXP_L'%(type)] = getattr(self,"m_%s_NXP_L"%(type)).GetValue()
+            config['%s_Threshold_NXP_H'%(type)] = getattr(self,"m_%s_NXP_H"%(type)).GetValue()
+            config['%s_Threshold_NXP_L'%(type)] = getattr(self,"m_%s_NXP_L"%(type)).GetValue()
         
         
-        
+      
         return config
         
         
@@ -252,8 +319,6 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         self.m_TR_threshold_value.SetValue(config['TR_threshold_value'] )
  
     def OnOpenConfig( self, event ):
-        self.SetAllResult(False)
-        self.SetAntennaResult('IN2',True)
         
         dlg = wx.FileDialog(self, message="Choose a file", defaultDir=os.getcwd(), defaultFile="", wildcard=utilities.wildcard, 
             style=wx.OPEN)
@@ -264,18 +329,40 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
                 self.InitConfig(yamlconfig)
             except Exception as err:
                 gLogger.LogError(err)
-    
+        self.SetAllResult(-1)
     def newResponse(self,newresponse):
         evt = RecordRFResponseEvt(data = newresponse)
         wx.PostEvent(self,evt)    
     
     
-    def SetAntennaResult(self,antenna,result):
+    def SetAntennaResult(self,antenna,actual_rssi,actual_rssi_nxp):
         antennaresult = getattr(self,"m_%s_RESULT"%(antenna))
+        index = self.current_config['%s_Threshold_Type_Index'%(antenna)]
+        rssivalue = 0.0;
+        actual_rssi=float(actual_rssi)
+        if index == 0:
+           rssivalue = float(self.current_config['%s_threshold_value'%(antenna)])
+        elif index == 1:
+           m2 =int(self.current_config['%s_Threshold_NXP_H'%(antenna)])
+           exp =int(self.current_config['%s_Threshold_NXP_L'%(antenna)])
+           rssivalue = self.rfmonitor.RSSICalculate(0, m2, exp)
+        elif index == 2:
+           gLogger.LogWarn("NOT VALID NOW H(nt) setting for threshold, the RSSI is default to 0")
+        getattr(self,"m_%s_RSSI"%(antenna)).SetValue(str(actual_rssi))
+        getattr(self,"m_%s_NXP"%(antenna)).SetValue("%s:%s"%(str(actual_rssi_nxp[0]),str(actual_rssi_nxp[1]))) 
+        result = (rssivalue < actual_rssi);           
         if result:
              antennaresult.SetBitmapLabel(wx.Bitmap("img/green.png"))
         else:
              antennaresult.SetBitmapLabel(wx.Bitmap("img/red.png"))
+        return result
+    def OnClose(self,event):
+        if self.timer:
+            self.timer.cancel()
+        event.Skip()
+    def OnThreasholdEnable(self,event):
+        config = self.FormatConfig()
+        self.current_config = config
     def onMenuSelection(self,event):
         eventid = event.GetId()
         if eventid == MainFrame.MENU_ID_EXIT:
@@ -287,12 +374,15 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
     def OnClearLog(self):
         self.m_info_list.DeleteAllItems()           
     def SetAllResult(self,result):
-        if result:
+        if result == 1:
             self.m_result_label.SetLabel(u"车内");
             self.m_result.SetBackgroundColour( wx.GREEN)
-        else:
+        elif result == 0:
             self.m_result_label.SetLabel(u"车外")
             self.m_result.SetBackgroundColour(wx.RED)
+        else:
+            self.m_result_label.SetLabel(u"未检测")
+            self.m_result.SetBackgroundColour(wx.WHITE)
         self.m_result.Refresh()
     def OnTriggerOnce(self,event):
         try:
@@ -307,12 +397,23 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
             
     def StartTriggerTimer(self):
         #self.rfmonitor.SendAuth()
-        global count
-        count+=1;
-        
-        self.SetAntennaResult('IN2', count%2)
-        self.SetAllResult(count%2)
-        
+       
+        #COLUMN_NAME=[u"Fob号",u"X坐标",u"Y坐标",u"Z坐标",u"IN1",u"IN2",u"IN3",u"FL",u"FR",u"TR"]
+        #THIS PART IS FOR TEST, JUST REMOVE IT 
+        response={}
+        response['battery'] = 100
+        response['fob_id'] = 1001
+        response['fob_number']=1002
+        response['LF1_RSSI'] = 1.1
+        response['LF2_RSSI'] = 1.1
+        response['LF3_RSSI'] = 1.2
+        response['LF1_M'] = 1
+        response['LF1_EXP'] = 2
+        response['LF2_M'] = 3
+        response['LF2_EXP'] = 4
+        response['LF3_M'] = 5
+        response['LF3_EXP'] = 6
+        self.newResponse(response)
         
         if  self.startperiodictrigger:
             self.timer = threading.Timer(int(self.m_trigger_period.GetValue()),self.StartTriggerTimer)
@@ -334,8 +435,36 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
         except Exception as err:
             gLogger.LogError(err);
     def UpdateResult(self,event):
-        pass
-               
+        if self.current_config == {}:
+            gLogger.LogError(u"配置未使能")
+            return
+        try:
+            self.UpdateResultIndicator(event.data)
+            self.InsertIntoTable(event.data)
+        except Exception as err:
+            gLogger.LogError(err)
+    def UpdateResultIndicator(self,response):
+        lf1_rssi= response['LF1_RSSI']
+        lf2_rssi= response['LF2_RSSI']
+        lf3_rssi= response['LF3_RSSI']
+        lf1_m=response['LF1_M'] 
+        lf1_exp = response['LF1_EXP'] 
+        lf2_m=response['LF2_M'] 
+        lf2_exp=response['LF2_EXP'] 
+        lf3_m=response['LF3_M'] 
+        lf3_exp=response['LF3_EXP'] 
+        lf_array = [str(lf1_rssi),str(lf2_rssi),str(lf3_rssi)]
+        lf_nxp_array=[(lf1_m,lf1_exp),(lf2_m,lf2_exp),(lf3_m,lf3_exp)]
+        lf_count = 0
+        final_result = False
+        for i,antennatype in enumerate(ANTENNA_LIST):
+            if self.current_config["%s_Checked"%(antennatype)]:
+                if lf_count < len(lf_array):
+                    antennaresult = self.SetAntennaResult(ANTENNA_LIST[i],lf_array[lf_count],lf_nxp_array[lf_count])
+                    if antennaresult:
+                        final_result = True
+                    lf_count+=1
+        self.SetAllResult(final_result)
     def OnSaveConfig( self, event ):
         dlg = wx.FileDialog(self,message="Choose a directory",defaultDir=os.getcwd(),style = wx.FD_SAVE,wildcard=utilities.wildcard)
         if dlg.ShowModal() == wx.ID_OK:
@@ -356,4 +485,6 @@ class CalibrateOnCarFrame( MainFrame.MainFame ):
        
     
     def OnConfigSet( self, event ):
-        self.rfmonitor.Config(self.FormatConfig())
+        config = self.FormatConfig()
+        self.rfmonitor.Config(config)
+        self.current_config = config

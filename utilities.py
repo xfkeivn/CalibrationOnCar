@@ -31,7 +31,7 @@ KEY_WF_TYPE = "KEY_WF_TYPE"
 
 #logging type
 LOG_TYPE_INFO = 1
-LOG_TYPE_DEBUG = 2
+LOG_TYPE_WARN = 2
 LOG_TYPE_ERROR = 3
 LOG_TYPE_MSG = 4
 
@@ -80,11 +80,11 @@ class CalToolLog:
         wx.PostEvent(self.logbox, evt)
         logging.log(logging.ERROR,info)
        # self.logbox.log(info,2)
-    def LogDebug(self,content):
-        evt = AppendLogItem(log_content = content,log_type = LOG_TYPE_DEBUG )
+    def LogWarn(self,content):
+        evt = AppendLogItem(log_content = content,log_type = LOG_TYPE_WARN )
         wx.PostEvent(self.logbox, evt)
         info = "%s" % (content)
-        logging.log(logging.DEBUG,info)
+        logging.log(logging.WARN,info)
     def LogMsg(self,content):
         evt = AppendLogItem(log_content = content,log_type = LOG_TYPE_MSG )
         wx.PostEvent(self.logbox, evt)

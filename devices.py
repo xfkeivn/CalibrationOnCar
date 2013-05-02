@@ -155,6 +155,13 @@ class RFReceiver():
         response['LF1_RSSI'] = self.RSSICalculate(0,datas[8],datas[9])
         response['LF2_RSSI'] = self.RSSICalculate(0,datas[10],datas[11])
         response['LF3_RSSI'] = self.RSSICalculate(0,datas[12],datas[13])
+        response['LF1_M'] = datas[8]
+        response['LF1_EXP'] = datas[9]
+        response['LF2_M'] = datas[10]
+        response['LF2_EXP'] = datas[11]
+        response['LF3_M'] = datas[12]
+        response['LF3_EXP'] = datas[13]
+        
         
         
         return response
