@@ -49,8 +49,10 @@ class SerialCommunication:
         return self.serialobj.write(datastring)
     def ReadOneFrameString(self):
         start_of_frame = self.serialobj.read(1)
-        time.sleep(0.2)
-        remainder = self.ReadAllWaiting();
+        remainder = ""
+        if start_of_frame:
+            time.sleep(0.03)
+            remainder = self.ReadAllWaiting();
         return start_of_frame + remainder;
     
     def MonitorResponse(self):
@@ -70,9 +72,6 @@ class SerialCommunication:
             gLogger.LogInfo("TX %s"%(self.FormatSerialData(request_datas)))
             #request 
             self.WriteBytes(request_datas)
-            # 200ms delay to wait for the incoming data
-            #time.sleep(2)
-            #response
             responsedatas = self.ReadOneFrameString()
             responsedatas_num = [ord(i) for i in responsedatas]
             if len(responsedatas_num)!=0: 

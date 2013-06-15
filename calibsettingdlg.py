@@ -4,7 +4,6 @@ import wx
 import MainFrame
 from setting import YamlConfig
 from utilities import gLogger
-import visa
 import time
 # Implementing SettingDiaglog
 class AutoCalibSettingDlg( MainFrame.SettingDiaglog ):

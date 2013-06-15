@@ -1,13 +1,9 @@
-from utilities import gLogger;
-import visa;
 import serialcommunication
 from setting import YamlConfig;
 import threading;
-import utilities
 from utilities import *
-import serialcommunication
-import crcmod
-import time
+
+lock = threading.Lock()
 START_MONITOR_ON_REQ=[0xB2,0x03,0x2,0x35,0x01,0x38]
 START_MONITOR_OFF_REQ=[0xB2,0x03,0x2,0x35,0x00,0x37]
 START_MONIOR_POSITIVE_RESP = [0xB2,0x03,0x82,0x35,0x00,0x37]
@@ -29,8 +25,9 @@ class MonitorThread(threading.Thread):
             self.job()
     def job(self):
         #Getting from the serialobj
+        lock.acquire()
         datas = self.parent.communicator.MonitorResponse()
-        
+        lock.release()
         if len(datas):
             self.parent.NewResponse(datas)
             
@@ -58,14 +55,14 @@ class RFReceiver():
         if not self.communicator.OpenSerial(comport, baudrate):
             raise Exception("Connect to Com port %s failed"%comport);
     def FormatConfigFrame(self,config):
-        frame = [0xB2,12,0x03,0x36]
+        frame = [0xB2,0x0C,0x03,0x36]
         frame.append(config['DataAntennaIndex']+1)
         frame.append(config['DataAnatennaCurIndex']+1)
         for antenna in ANTENNA_LIST: 
             if not config['%s_Checked'%(antenna)]:
                 frame.append(0)
             else:
-                frame.append(config['%_Current_Index'%(antenna)])
+                frame.append(config['%s_Current_Index'%(antenna)]+1)
         #reserved
         frame.append(0)
         frame.append(0)
@@ -77,7 +74,9 @@ class RFReceiver():
             if not self.communicator.IsPortOk:
                 gLogger.LogError("Configuration failed, the port is not opened, please init device first ..")
                 return False
+            lock.acquire()
             responsedatas = self.communicator.RequestAndResponse(self.FormatConfigFrame(config))
+            lock.release()
             if len(responsedatas) == 8 and responsedatas[2] == 0x83 and responsedatas[4:7]==[0x41,0x43,0x4B]:
                 gLogger.LogInfo("Configurate the LF succesfully  .. ")
             else:
@@ -89,10 +88,12 @@ class RFReceiver():
         return True
     
     def SendAuth(self):
-        frame = [0xB2,0x0F,0x01,0x36,0x03,0x8D,0XB5,0x0A,0x79,0x01,0xE4,0x4E,0xF2,0x5A,0xC0,0x51,0x09]
+        frame = [0xB2,0x0F,0x01,0x36,0x03,0x8D,0xB5,0x0A,0x79,0x01,0xE4,0x4E,0xF2,0x5A,0xC0,0x51,0x09,0x00]
         actual_checksum = sum(frame[2:-1])% 0x100
-        frame.append(actual_checksum)
+        frame[-1] = (actual_checksum)  
         self.communicator.WriteBytes(frame)
+        hexstring = [(hex(i)).upper() for i in frame]  
+        gLogger.LogInfo("TX:%s" %(hexstring))
 
     def FormatDataToFrame(self,datas):
         #Check the Serial data format
@@ -140,18 +141,17 @@ class RFReceiver():
             val = 0x00-val;        
         return val;
   
-    def FormatRFResponse(self,datas):
+    def FormatRSSIResponse(self,datas):
         response={}
         data1 = datas[0]
-        if (data1 & 0x0F) != 0x3:
-            raise Exception ("Function code is not 3h,but is %d"%(data1&0x0F))
-        UID = data1&0xF0
+        FOB_NUMBER = (data1&0xF0)>>4
         data2 = datas[1]
-        batteryindex = data2 & 0xF0
+        batteryindex = (data2 & 0xF0)>>4
         batteryvalue = BATTERY_TABLE[batteryindex]
+        response['RESPONSE_TYPE'] = 'RSSI'
         response['battery'] = batteryvalue
-        response['fob_id'] = UID
-        response['fob_number']=0
+        response['fob_id'] = 0
+        response['fob_number']=FOB_NUMBER
         response['LF1_RSSI'] = self.RSSICalculate(0,datas[8],datas[9])
         response['LF2_RSSI'] = self.RSSICalculate(0,datas[10],datas[11])
         response['LF3_RSSI'] = self.RSSICalculate(0,datas[12],datas[13])
@@ -161,14 +161,52 @@ class RFReceiver():
         response['LF2_EXP'] = datas[11]
         response['LF3_M'] = datas[12]
         response['LF3_EXP'] = datas[13]
-        
-        
+        return response
+    def FormatRKEShortResponse(self,datas):
+        d4,d3,d2,d1 = datas[1:5]
+        ide = (d4<<24)+(d3<<16)+(d2<<8)+(d1&0xF0)
+        response={}
+        response['RESPONSE_TYPE']='RKESHORT'
+        FOB_NUMBER = (datas[0]&0xF0)>>4
+        response['fob_number']=FOB_NUMBER
+        response['IDE'] = hex(ide).upper()
+        batteryindex = (datas[5] & 0xF0)>>4
+        batteryvalue = BATTERY_TABLE[batteryindex]
+        response['battery'] = batteryvalue
+        buttontype = datas[5]&0x0F
+        response['BUTTON'] = buttontype
+        return response
         
         return response
+    def FormatRKELongResponse(self,datas):
+        d4,d3,d2,d1 = datas[1:5]
+        ide = (d4<<24)+(d3<<16)+(d2<<8)+(d1&0xF0)
+        response={}
+        response['RESPONSE_TYPE']='RKELONG'
+        FOB_NUMBER = (datas[0]&0xF0)>>4
+        response['fob_number']=FOB_NUMBER
+        response['IDE'] = hex(ide).upper()
+        batteryindex = (datas[5] & 0xF0)>>4
+        batteryvalue = BATTERY_TABLE[batteryindex]
+        response['battery'] = batteryvalue
+        buttontype = datas[5]&0x0F
+        response['BUTTON'] = buttontype
+        d4,d3,d2,d1 = datas[6:10]
+        si = ((d4<<24)+(d3<<16)+(d2<<8)+(d1))>>4
+        response['SI']=hex(si).upper()
+        return response
+        
+
+        
     def NewResponse(self,datas):
         try:
             validpart = self.FormatDataToFrame(datas) 
-            responseframe = self.FormatRFResponse(validpart)
+            if (validpart[0]&0x0F) == 0x3:
+                responseframe = self.FormatRSSIResponse(validpart)
+            elif (validpart[0]&0x0F) == 0x02:
+                responseframe = self.FormatRKEShortResponse(validpart)
+            elif (validpart[0]&0x0F) == 0x01:
+                responseframe = self.FormatRKELongResponse(validpart)
             for observer in self.observers:
                 observer.newResponse(responseframe)
         except Exception as err:

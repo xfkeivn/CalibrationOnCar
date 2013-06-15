@@ -9,7 +9,6 @@
 
 import wx
 import wx.grid
-import wx.aui
 
 MENU_ID_CLEAR_LOG = 1000
 MENU_ID_EXIT = 1001
@@ -26,7 +25,7 @@ TOOL_ID_CLEAR = 1006
 class MainFame ( wx.Frame ):
 	
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"PEPS整车低频标定工具", pos = wx.DefaultPosition, size = wx.Size( 1144,862 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"PEPS整车低频标定工具", pos = wx.DefaultPosition, size = wx.Size( 1356,862 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
@@ -35,15 +34,7 @@ class MainFame ( wx.Frame ):
 		self.m_main_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		mainsizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.m_outer_splitter = wx.SplitterWindow( self.m_main_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
-		self.m_outer_splitter.SetSashGravity( 0 )
-		self.m_outer_splitter.Bind( wx.EVT_IDLE, self.m_outer_splitterOnIdle )
-		self.m_outer_splitter.SetMinimumPaneSize( 100 )
-		
-		self.m_top_panel = wx.Panel( self.m_outer_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		m_top_panel_sizer = wx.BoxSizer( wx.HORIZONTAL )
-		
-		self.m_content_split = wx.SplitterWindow( self.m_top_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_content_split = wx.SplitterWindow( self.m_main_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_content_split.Bind( wx.EVT_IDLE, self.m_content_splitOnIdle )
 		self.m_content_split.SetMinimumPaneSize( 500 )
 		
@@ -61,7 +52,7 @@ class MainFame ( wx.Frame ):
 		self.m_staticText13.Wrap( -1 )
 		bSizer8.Add( self.m_staticText13, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.m_trigger_period = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"5", wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
+		self.m_trigger_period = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"1", wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
 		bSizer8.Add( self.m_trigger_period, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.m_lf_period_send = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"开始周期触发", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -142,6 +133,7 @@ class MainFame ( wx.Frame ):
 		fgSizer2.Add( self.m_IN1_Check, 0, wx.ALL, 5 )
 		
 		self.m_IN2_Check = wx.CheckBox( self.m_scrolledWindow3, wx.ID_ANY, u"IN2", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_IN2_Check.SetValue(True) 
 		fgSizer2.Add( self.m_IN2_Check, 0, wx.ALL, 5 )
 		
 		self.m_IN3_Check = wx.CheckBox( self.m_scrolledWindow3, wx.ID_ANY, u"IN3", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -194,7 +186,7 @@ class MainFame ( wx.Frame ):
 		self.m_IN1_Threshold.SetSelection( 0 )
 		sbSizer61.Add( self.m_IN1_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_IN1_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_IN1_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer61.Add( self.m_IN1_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer26 = wx.BoxSizer( wx.HORIZONTAL )
@@ -220,7 +212,7 @@ class MainFame ( wx.Frame ):
 		self.m_IN2_Threshold.SetSelection( 0 )
 		sbSizer9.Add( self.m_IN2_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_IN2_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_IN2_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer9.Add( self.m_IN2_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer261 = wx.BoxSizer( wx.HORIZONTAL )
@@ -243,10 +235,10 @@ class MainFame ( wx.Frame ):
 		
 		m_IN3_ThresholdChoices = [ u"RSSI", u"NXP ", u"H" ]
 		self.m_IN3_Threshold = wx.RadioBox( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, m_IN3_ThresholdChoices, 1, wx.RA_SPECIFY_COLS )
-		self.m_IN3_Threshold.SetSelection( 1 )
+		self.m_IN3_Threshold.SetSelection( 0 )
 		sbSizer10.Add( self.m_IN3_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_IN3_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_IN3_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer10.Add( self.m_IN3_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer262 = wx.BoxSizer( wx.HORIZONTAL )
@@ -269,10 +261,10 @@ class MainFame ( wx.Frame ):
 		
 		m_FL_ThresholdChoices = [ u"RSSI", u"NXP ", u"H" ]
 		self.m_FL_Threshold = wx.RadioBox( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, m_FL_ThresholdChoices, 1, wx.RA_SPECIFY_COLS )
-		self.m_FL_Threshold.SetSelection( 1 )
+		self.m_FL_Threshold.SetSelection( 0 )
 		sbSizer11.Add( self.m_FL_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_FL_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_FL_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer11.Add( self.m_FL_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer263 = wx.BoxSizer( wx.HORIZONTAL )
@@ -298,7 +290,7 @@ class MainFame ( wx.Frame ):
 		self.m_FR_Threshold.SetSelection( 0 )
 		sbSizer12.Add( self.m_FR_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_FR_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_FR_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer12.Add( self.m_FR_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer264 = wx.BoxSizer( wx.HORIZONTAL )
@@ -324,7 +316,7 @@ class MainFame ( wx.Frame ):
 		self.m_TR_Threshold.SetSelection( 0 )
 		sbSizer13.Add( self.m_TR_Threshold, 0, wx.ALL, 5 )
 		
-		self.m_TR_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
+		self.m_TR_threshold_value = wx.TextCtrl( self.m_scrolledWindow3, wx.ID_ANY, u"290", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
 		sbSizer13.Add( self.m_TR_threshold_value, 0, wx.ALL, 5 )
 		
 		bSizer265 = wx.BoxSizer( wx.HORIZONTAL )
@@ -347,17 +339,17 @@ class MainFame ( wx.Frame ):
 		
 		bSizer46 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"打开配置", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer46.Add( self.m_config, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.m_save_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"配置保存", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer46.Add( self.m_save_config, 0, wx.ALL, 5 )
-		
-		self.m_load_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"配置使能", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_load_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"使能天线配置", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer46.Add( self.m_load_config, 0, wx.ALL, 5 )
 		
-		self.m_threhold_enable = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"门限值使能", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer46.Add( self.m_threhold_enable, 0, wx.ALL, 5 )
+		self.m_threhold_enable = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"使能RSSI门限值", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer46.Add( self.m_threhold_enable, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.m_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"打开配置", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer46.Add( self.m_config, 0, wx.ALL|wx.EXPAND|wx.ALIGN_BOTTOM, 5 )
+		
+		self.m_save_config = wx.Button( self.m_scrolledWindow3, wx.ID_ANY, u"保存配置", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer46.Add( self.m_save_config, 0, wx.ALL, 5 )
 		
 		sbSizer6.Add( bSizer46, 0, wx.EXPAND, 5 )
 		
@@ -367,12 +359,134 @@ class MainFame ( wx.Frame ):
 		
 		bSizer7.Add( sbSizer3, 0, wx.EXPAND, 5 )
 		
+		bSizer3 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_info_list = wx.ListCtrl( self.m_scrolledWindow3, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), wx.LC_REPORT|wx.SUNKEN_BORDER )
+		self.m_info_list.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		bSizer3.Add( self.m_info_list, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer7.Add( bSizer3, 1, wx.EXPAND, 5 )
+		
 		self.m_scrolledWindow3.SetSizer( bSizer7 )
 		self.m_scrolledWindow3.Layout()
 		self.m_panel10 = wx.Panel( self.m_content_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL )
 		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
 		
 		bSizer90 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_panel101 = wx.Panel( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), wx.STATIC_BORDER|wx.TAB_TRAVERSAL )
+		bSizer33 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_panel12 = wx.Panel( self.m_panel101, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sbSizer14 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel12, wx.ID_ANY, u"RKE" ), wx.VERTICAL )
+		
+		fgSizer5 = wx.FlexGridSizer( 3, 2, 0, 0 )
+		fgSizer5.SetFlexibleDirection( wx.BOTH )
+		fgSizer5.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.m_staticText371 = wx.StaticText( self.m_panel12, wx.ID_ANY, u"SI", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText371.Wrap( -1 )
+		fgSizer5.Add( self.m_staticText371, 0, wx.ALL, 5 )
+		
+		self.m_SI_value = wx.TextCtrl( self.m_panel12, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer5.Add( self.m_SI_value, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_staticText38 = wx.StaticText( self.m_panel12, wx.ID_ANY, u"按键", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText38.Wrap( -1 )
+		fgSizer5.Add( self.m_staticText38, 0, wx.ALL, 5 )
+		
+		bSizer35 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_lock = wx.BitmapButton( self.m_panel12, wx.ID_ANY, wx.Bitmap( u"img/red.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW )
+		
+		self.m_lock.SetBitmapDisabled( wx.Bitmap( u"img/grey.png", wx.BITMAP_TYPE_ANY ) )
+		bSizer35.Add( self.m_lock, 0, wx.ALL, 5 )
+		
+		self.m_unlock = wx.BitmapButton( self.m_panel12, wx.ID_ANY, wx.Bitmap( u"img/red.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW )
+		
+		self.m_unlock.SetBitmapDisabled( wx.Bitmap( u"img/grey.png", wx.BITMAP_TYPE_ANY ) )
+		bSizer35.Add( self.m_unlock, 0, wx.ALL, 5 )
+		
+		self.m_trunk = wx.BitmapButton( self.m_panel12, wx.ID_ANY, wx.Bitmap( u"img/red.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW )
+		
+		self.m_trunk.SetBitmapDisabled( wx.Bitmap( u"img/grey.png", wx.BITMAP_TYPE_ANY ) )
+		bSizer35.Add( self.m_trunk, 0, wx.ALL, 5 )
+		
+		fgSizer5.Add( bSizer35, 1, wx.EXPAND, 5 )
+		
+		sbSizer14.Add( fgSizer5, 1, wx.EXPAND, 5 )
+		
+		self.m_panel12.SetSizer( sbSizer14 )
+		self.m_panel12.Layout()
+		sbSizer14.Fit( self.m_panel12 )
+		bSizer33.Add( self.m_panel12, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_panel13 = wx.Panel( self.m_panel101, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sbSizer121 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel13, wx.ID_ANY, u"钥匙信息" ), wx.VERTICAL )
+		
+		fgSizer4 = wx.FlexGridSizer( 3, 2, 0, 0 )
+		fgSizer4.SetFlexibleDirection( wx.BOTH )
+		fgSizer4.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.m_staticText37 = wx.StaticText( self.m_panel13, wx.ID_ANY, u"IDE", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText37.Wrap( -1 )
+		self.m_staticText37.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
+		
+		fgSizer4.Add( self.m_staticText37, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.m_rke_ide = wx.TextCtrl( self.m_panel13, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.m_rke_ide.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
+		self.m_rke_ide.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
+		
+		fgSizer4.Add( self.m_rke_ide, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_key_battery = wx.StaticText( self.m_panel13, wx.ID_ANY, u"Battery", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_key_battery.Wrap( -1 )
+		self.m_key_battery.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
+		
+		fgSizer4.Add( self.m_key_battery, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.m_battery_value = wx.TextCtrl( self.m_panel13, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
+		self.m_battery_value.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
+		self.m_battery_value.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
+		
+		fgSizer4.Add( self.m_battery_value, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_staticText40 = wx.StaticText( self.m_panel13, wx.ID_ANY, u"Fob Num", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText40.Wrap( -1 )
+		self.m_staticText40.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
+		
+		fgSizer4.Add( self.m_staticText40, 0, wx.ALL, 5 )
+		
+		self.m_fob_number = wx.TextCtrl( self.m_panel13, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
+		self.m_fob_number.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
+		self.m_fob_number.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
+		
+		fgSizer4.Add( self.m_fob_number, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		sbSizer121.Add( fgSizer4, 1, wx.EXPAND, 5 )
+		
+		self.m_panel13.SetSizer( sbSizer121 )
+		self.m_panel13.Layout()
+		sbSizer121.Fit( self.m_panel13 )
+		bSizer33.Add( self.m_panel13, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_panel112 = wx.Panel( self.m_panel101, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer273 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_bitmap3 = wx.StaticBitmap( self.m_panel112, wx.ID_ANY, wx.Bitmap( u"img/naen3.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, wx.RAISED_BORDER )
+		bSizer273.Add( self.m_bitmap3, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 0 )
+		
+		self.m_panel112.SetSizer( bSizer273 )
+		self.m_panel112.Layout()
+		bSizer273.Fit( self.m_panel112 )
+		bSizer33.Add( self.m_panel112, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_panel101.SetSizer( bSizer33 )
+		self.m_panel101.Layout()
+		bSizer33.Fit( self.m_panel101 )
+		bSizer90.Add( self.m_panel101, 0, 0, 5 )
 		
 		self.m_scrolledWindow2 = wx.ScrolledWindow( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
 		self.m_scrolledWindow2.SetScrollRate( 5, 5 )
@@ -565,88 +679,11 @@ class MainFame ( wx.Frame ):
 		
 		bSizer21.Add( bSizer90, 1, wx.EXPAND, 5 )
 		
-		self.m_panel101 = wx.Panel( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), wx.STATIC_BORDER|wx.TAB_TRAVERSAL )
-		bSizer33 = wx.BoxSizer( wx.VERTICAL )
-		
-		self.m_bitmap3 = wx.StaticBitmap( self.m_panel101, wx.ID_ANY, wx.Bitmap( u"img/naen3.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, wx.RAISED_BORDER )
-		bSizer33.Add( self.m_bitmap3, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 0 )
-		
-		self.m_panel23 = wx.Panel( self.m_panel101, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,20 ), wx.TAB_TRAVERSAL )
-		bSizer33.Add( self.m_panel23, 0, 0, 5 )
-		
-		sbSizer121 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel101, wx.ID_ANY, u"钥匙信息" ), wx.VERTICAL )
-		
-		fgSizer4 = wx.FlexGridSizer( 3, 2, 0, 0 )
-		fgSizer4.SetFlexibleDirection( wx.BOTH )
-		fgSizer4.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
-		
-		self.m_staticText37 = wx.StaticText( self.m_panel101, wx.ID_ANY, u"UID", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText37.Wrap( -1 )
-		self.m_staticText37.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
-		
-		fgSizer4.Add( self.m_staticText37, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-		
-		self.m_key_uid = wx.TextCtrl( self.m_panel101, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
-		self.m_key_uid.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
-		self.m_key_uid.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
-		
-		fgSizer4.Add( self.m_key_uid, 0, wx.ALL, 5 )
-		
-		self.m_key_battery = wx.StaticText( self.m_panel101, wx.ID_ANY, u"Battery", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_key_battery.Wrap( -1 )
-		self.m_key_battery.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
-		
-		fgSizer4.Add( self.m_key_battery, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-		
-		self.m_battery_value = wx.TextCtrl( self.m_panel101, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
-		self.m_battery_value.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
-		self.m_battery_value.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
-		
-		fgSizer4.Add( self.m_battery_value, 0, wx.ALL, 5 )
-		
-		self.m_staticText40 = wx.StaticText( self.m_panel101, wx.ID_ANY, u"Fob Num", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText40.Wrap( -1 )
-		self.m_staticText40.SetFont( wx.Font( 9, 74, 90, 92, False, "Tahoma" ) )
-		
-		fgSizer4.Add( self.m_staticText40, 0, wx.ALL, 5 )
-		
-		self.m_fob_number = wx.TextCtrl( self.m_panel101, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
-		self.m_fob_number.SetForegroundColour( wx.Colour( 0, 255, 0 ) )
-		self.m_fob_number.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
-		
-		fgSizer4.Add( self.m_fob_number, 0, wx.ALL, 5 )
-		
-		sbSizer121.Add( fgSizer4, 0, wx.EXPAND, 5 )
-		
-		bSizer33.Add( sbSizer121, 1, wx.EXPAND, 5 )
-		
-		self.m_panel101.SetSizer( bSizer33 )
-		self.m_panel101.Layout()
-		bSizer33.Fit( self.m_panel101 )
-		bSizer21.Add( self.m_panel101, 0, 0, 5 )
-		
 		self.m_panel10.SetSizer( bSizer21 )
 		self.m_panel10.Layout()
 		bSizer21.Fit( self.m_panel10 )
-		self.m_content_split.SplitVertically( self.m_scrolledWindow3, self.m_panel10, 564 )
-		m_top_panel_sizer.Add( self.m_content_split, 1, wx.ALL|wx.EXPAND, 5 )
-		
-		self.m_top_panel.SetSizer( m_top_panel_sizer )
-		self.m_top_panel.Layout()
-		m_top_panel_sizer.Fit( self.m_top_panel )
-		self.m_bottom_panel = wx.Panel( self.m_outer_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer3 = wx.BoxSizer( wx.VERTICAL )
-		
-		self.m_info_list = wx.ListCtrl( self.m_bottom_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.SUNKEN_BORDER )
-		self.m_info_list.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
-		
-		bSizer3.Add( self.m_info_list, 1, wx.ALL|wx.EXPAND, 5 )
-		
-		self.m_bottom_panel.SetSizer( bSizer3 )
-		self.m_bottom_panel.Layout()
-		bSizer3.Fit( self.m_bottom_panel )
-		self.m_outer_splitter.SplitHorizontally( self.m_top_panel, self.m_bottom_panel, 406 )
-		mainsizer.Add( self.m_outer_splitter, 1, wx.EXPAND, 5 )
+		self.m_content_split.SplitVertically( self.m_scrolledWindow3, self.m_panel10, 666 )
+		mainsizer.Add( self.m_content_split, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		self.m_main_panel.SetSizer( mainsizer )
 		self.m_main_panel.Layout()
@@ -693,10 +730,10 @@ class MainFame ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.OnClose )
 		self.m_lf_period_send.Bind( wx.EVT_BUTTON, self.OnTriggerOnTime )
 		self.m_lf_once_send.Bind( wx.EVT_BUTTON, self.OnTriggerOnce )
-		self.m_config.Bind( wx.EVT_BUTTON, self.OnOpenConfig )
-		self.m_save_config.Bind( wx.EVT_BUTTON, self.OnSaveConfig )
 		self.m_load_config.Bind( wx.EVT_BUTTON, self.OnConfigSet )
 		self.m_threhold_enable.Bind( wx.EVT_BUTTON, self.OnThreasholdEnable )
+		self.m_config.Bind( wx.EVT_BUTTON, self.OnOpenConfig )
+		self.m_save_config.Bind( wx.EVT_BUTTON, self.OnSaveConfig )
 		self.Bind( wx.EVT_MENU, self.onMenuSelection, id = self.m_menu_clear_log.GetId() )
 		self.Bind( wx.EVT_MENU, self.onMenuSelection, id = self.m_file_exit_menu.GetId() )
 		self.Bind( wx.EVT_MENU, self.onMenuSelection, id = self.m_option_setting.GetId() )
@@ -720,16 +757,16 @@ class MainFame ( wx.Frame ):
 	def OnTriggerOnce( self, event ):
 		event.Skip()
 	
-	def OnOpenConfig( self, event ):
-		event.Skip()
-	
-	def OnSaveConfig( self, event ):
-		event.Skip()
-	
 	def OnConfigSet( self, event ):
 		event.Skip()
 	
 	def OnThreasholdEnable( self, event ):
+		event.Skip()
+	
+	def OnOpenConfig( self, event ):
+		event.Skip()
+	
+	def OnSaveConfig( self, event ):
 		event.Skip()
 	
 	def onMenuSelection( self, event ):
@@ -744,12 +781,8 @@ class MainFame ( wx.Frame ):
 	
 	
 	
-	def m_outer_splitterOnIdle( self, event ):
-		self.m_outer_splitter.SetSashPosition( 406 )
-		self.m_outer_splitter.Unbind( wx.EVT_IDLE )
-	
 	def m_content_splitOnIdle( self, event ):
-		self.m_content_split.SetSashPosition( 564 )
+		self.m_content_split.SetSashPosition( 666 )
 		self.m_content_split.Unbind( wx.EVT_IDLE )
 	
 
@@ -766,7 +799,7 @@ class SettingDiaglog ( wx.Dialog ):
 		
 		bSizer9 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.m_auinotebook = wx.aui.AuiNotebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.aui.AUI_NB_DEFAULT_STYLE )
+		self.m_auinotebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_RF_receiver_page = wx.Panel( self.m_auinotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		fgSizer2 = wx.FlexGridSizer( 2, 2, 0, 0 )
 		fgSizer2.SetFlexibleDirection( wx.BOTH )
@@ -793,7 +826,7 @@ class SettingDiaglog ( wx.Dialog ):
 		self.m_RF_receiver_page.SetSizer( fgSizer2 )
 		self.m_RF_receiver_page.Layout()
 		fgSizer2.Fit( self.m_RF_receiver_page )
-		self.m_auinotebook.AddPage( self.m_RF_receiver_page, u"通讯板卡设置", False, wx.NullBitmap )
+		self.m_auinotebook.AddPage( self.m_RF_receiver_page, u"串口", False )
 		self.m_system_setting = wx.Panel( self.m_auinotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer19 = wx.BoxSizer( wx.VERTICAL )
 		
@@ -818,9 +851,9 @@ class SettingDiaglog ( wx.Dialog ):
 		self.m_system_setting.SetSizer( bSizer19 )
 		self.m_system_setting.Layout()
 		bSizer19.Fit( self.m_system_setting )
-		self.m_auinotebook.AddPage( self.m_system_setting, u"系统设置", False, wx.NullBitmap )
+		self.m_auinotebook.AddPage( self.m_system_setting, u"日志", False )
 		
-		bSizer9.Add( self.m_auinotebook, 1, wx.EXPAND |wx.ALL, 0 )
+		bSizer9.Add( self.m_auinotebook, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		m_sdbSizer1 = wx.StdDialogButtonSizer()
 		self.m_sdbSizer1OK = wx.Button( self, wx.ID_OK )

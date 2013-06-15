@@ -6,15 +6,13 @@
 
 # comment out the following to use wx rather than wxagg
 
-import wx
-import ConfigParser
+
 import wx.lib.newevent
 import os
-import datetime
+
 import logging
 import time
-import math
-import visa
+
 from setting import YamlConfig
 (AppendLogItem, EVT_UPDATE_APPENDLOGITEM) = wx.lib.newevent.NewEvent()
 ANTENNA_LIST = ['IN1','IN2','IN3','FL','FR','TR']
@@ -59,8 +57,6 @@ class CalToolLog:
         self.logbox = None
         YamlConfig().LoadConfig()
         path = YamlConfig().GetYaml()["SAVE_DIR"]
-        
-        print path;
         if not os.path.exists(path):
             os.makedirs(path)
         logging.basicConfig(filename = os.path.join(path, 'log_%s.txt'%time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime())), level = logging.DEBUG, filemode = 'w', format = '%(asctime)s - %(levelname)s: %(message)s')  
@@ -79,7 +75,6 @@ class CalToolLog:
         evt = AppendLogItem(log_content = content,log_type = LOG_TYPE_ERROR )
         wx.PostEvent(self.logbox, evt)
         logging.log(logging.ERROR,info)
-       # self.logbox.log(info,2)
     def LogWarn(self,content):
         evt = AppendLogItem(log_content = content,log_type = LOG_TYPE_WARN )
         wx.PostEvent(self.logbox, evt)
